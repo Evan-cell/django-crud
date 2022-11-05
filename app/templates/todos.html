@@ -1,5 +1,26 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<h2>Todoooooos</h2>
+
+
+<div class="row">
+    {% for todos in todo %}
+    <div class="col-sm-6 p-4">
+        
+<div class="card">
+    <div class="card-header">
+      Created on {{todos.created}}
+    </div>
+    <div class="card-body">
+      <h5 class="card-title">{{todos.title}}</h5>
+      <p class="card-text">{{todos.description}}</p>
+      <a href="#" class="btn btn-primary">update</a>
+      <a href="#" class="btn btn-primary">Delete</a>
+    </div>
+  </div>
+  
+    </div>
+    {%endfor%}
+</div>
+
 {% endblock %}

@@ -1,10 +1,14 @@
 from django.shortcuts import render
 
+from .models import Todos
+
 # Create your views here.
 
 #todos
 def todos(request):
-    context = {}
+    todo = Todos.objects.all()
+    print(todo)
+    context = {'todo':todo}
     return render(request, 'todos.html', context)
 
 
