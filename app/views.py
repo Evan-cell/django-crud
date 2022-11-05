@@ -29,12 +29,23 @@ def createTodo(request):
     return render(request, 'create.html', context)
     
 #update todo
-def updateTodo(request):
-    context = {}
-    return render(request, 'update.html', context)
+def updateTodo(request,pk):
+    todo = Todos.objects.get(id=pk)
+    form = todosForm(instance=todo)
+    if request.method == 'POST':
+        form = todosForm(request.POST,instance=todo)
+        if form.is_valid():
+            form.save()
+            return redirect('/')
+    context = {'form':form}
+    return render(request, 'create.html', context)
 
 # delete todo
-def deleteTodo(request):
-    context = {}
+def deleteTodo(request,pk):
+    todo = Todos.objects.get(id=pk)
+    if request.method == 'POST':
+        todo.delete()
+        return redirect('/')
+    context = {'todo':todo}
     return render(request, 'delete.html', context)
 

@@ -14,8 +14,8 @@
     <div class="card-body">
       <h5 class="card-title">{{todos.title}}</h5>
       <p class="card-text">{{todos.description}}</p>
-      <a href="#" class="btn btn-primary">update</a>
-      <a href="#" class="btn btn-primary">Delete</a>
+      <a href="{% url 'update' todos.id %}" class="btn btn-primary">update</a>
+      <a href="{% url 'delete' todos.id %}" class="btn btn-primary">Delete</a>
     </div>
   </div>
   
