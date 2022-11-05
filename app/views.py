@@ -1,5 +1,6 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
+from .forms import todosForm
 from .models import Todos
 
 # Create your views here.
@@ -16,7 +17,15 @@ def todos(request):
 
 #create todo
 def createTodo(request):
-    context = {}
+    form = todosForm()
+    if request.method == 'POST':
+        form = todosForm(request.POST)
+        if form.is_valid():
+            form.save()
+        return redirect('/')    
+
+    
+    context={'form':form}
     return render(request, 'create.html', context)
     
 #update todo
