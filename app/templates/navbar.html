@@ -6,12 +6,25 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+          {% if user.is_authenticated %}
+          <li class="nav-item">
+            <a class="nav-link" href="#">Welcome, {{user.username}}</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link active" aria-current="page" href="{% url 'create'  %}">Create Todo</a>
           </li>
-          
+          <li class="nav-item">
+            
+            <a class="nav-link active"  aria-current="page" href="{% url 'logout'  %}">Logout</a>
+          </li>
+          {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'login'  %}">Login</a>
+          </li>
+          {% endif %}
         </ul>
         <form class="d-flex">
+          
           <input class="form-control me-2"  type="text" name="search_query" value="{{search_query}}" />
           <button class="btn btn-outline-success" type="submit" value="Search">Search</button>
         </form>
