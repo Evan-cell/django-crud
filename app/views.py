@@ -3,19 +3,24 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm
 from django.shortcuts import redirect, render
+from rest_framework import permissions, status, viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from .forms import NewUserForm, todosForm
 from .models import Todos
+from .serializers import todosSerializers
 
 # Create your views here.
 
 #todos
 @login_required(login_url='login')
 def todos(request):
+    
     search_query = ''
     if request.GET.get('search_query'):
         search_query = request.GET.get('search_query')
-    todo = Todos.objects.filter(title__icontains=search_query)
+    todo = Todos.objects.filter(title__icontains=search_query,user = request.user.id)
     print(todo)
     context = {'todo':todo}
     return render(request, 'todos.html', context)
@@ -31,7 +36,7 @@ def createTodo(request):
         form = todosForm(request.POST)
         if form.is_valid():
             form.save()
-        return redirect('todo')    
+        return redirect('todos')    
 
     
     context={'form':form}
@@ -91,3 +96,26 @@ def logout_request(request):
 	logout(request)
 	messages.info(request, "You have successfully logged out.") 
 	return redirect('login')
+
+class todoListApi(APIView):
+    # CHECKS IF A USER IS AUTHENTICATED
+    permission_classes = [permissions.IsAuthenticated]    
+
+    #LIST ALL ITEMS
+    def get(self,request,*args,**kwargs):
+        todos = Todos.objects.filter(user = request.user.id)
+        serializer = todosSerializers(todos, many=True)
+        return Response(serializer.data,status=status.HTTP_200_OK)
+
+    #create a todo api
+    def post(self,request,*args,**kwargs):
+        data = {
+            'title':request.data.get('title'),
+            'description':request.data.get('description'),
+            'user':request.user.id
+        }    
+        serializer = todosSerializers(data=data)  # type: ignore
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
