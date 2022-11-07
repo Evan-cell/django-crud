@@ -102,7 +102,7 @@ class todoListApi(APIView):
     permission_classes = [permissions.IsAuthenticated]    
 
     #LIST ALL ITEMS
-    def get(self,request,*args,**kwargs):
+    def get(self,request,*args,**kwargs):  # type: ignore
         todos = Todos.objects.filter(user = request.user.id)
         serializer = todosSerializers(todos, many=True)
         return Response(serializer.data,status=status.HTTP_200_OK)
@@ -110,12 +110,68 @@ class todoListApi(APIView):
     #create a todo api
     def post(self,request,*args,**kwargs):
         data = {
-            'title':request.data.get('title'),
-            'description':request.data.get('description'),
+            'title':'new title',
+            'description':'new',
             'user':request.user.id
         }    
         serializer = todosSerializers(data=data)  # type: ignore
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data,status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)    
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+ 
+
+    
+class TodoDetailApiView(APIView):
+    # add permission to check if user is authenticated
+    permission_classes = [permissions.IsAuthenticated] 
+    def get_object(self, todo_id, user_id):
+        # GET OBJECTS WITH A GIVEN ID AND USER
+        try:
+            return Todos.objects.get(id=todo_id,user=user_id)     
+        except Todos.DoesNotExist:
+            return None   
+    # Retrieve todo from a given id
+    def get(self,request,todo_id,*args, **kwargs):
+        todo_instance = self.get_object(todo_id, request.user.id)  
+        if not todo_instance:
+            return Response(
+                {"res":"objects with todo id does not exist"},
+                status=status.HTTP_400_BAD_REQUEST
+            )   
+        serializer = todosSerializers(todo_instance)
+        return Response(serializer.data, status.HTTP_200_OK)      
+
+    # 4. Update
+    def put(self, request, todo_id, *args, **kwargs):        
+        todo_instance = self.get_object(todo_id, request.user.id)  
+        if not todo_instance:
+            return Response(
+                {"res": "Object with todo id does not exists"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        data = {
+            'title':request.data.get('title'),
+            'description':request.data.get('description'),
+            'user':request.user.id
+        }    
+        serializer = todosSerializers(instance = todo_instance, data=data, partial = True)   # type: ignore
+        if serializer.is_valid():
+            serializer.save()    
+            return Response(serializer.data, status=status.HTTP_200_OK)     
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)  
+
+        # 5. Delete
+    def delete(self, request, todo_id, *args, **kwargs):
+        todo_instance = self.get_object(todo_id, request.user.id)   
+        if not todo_instance:
+            return Response(
+                {"res": "Object with todo id does not exists"}, 
+                status=status.HTTP_400_BAD_REQUEST
+            ) 
+        todo_instance.delete()   
+        return Response(
+            {"res": "Object deleted!"},
+            status=status.HTTP_200_OK
+        )                           
+
