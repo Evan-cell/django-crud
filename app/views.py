@@ -7,7 +7,10 @@ from .models import Todos
 
 #todos
 def todos(request):
-    todo = Todos.objects.all()
+    search_query = ''
+    if request.GET.get('search_query'):
+        search_query = request.GET.get('search_query')
+    todo = Todos.objects.filter(title__icontains=search_query)
     print(todo)
     context = {'todo':todo}
     return render(request, 'todos.html', context)
